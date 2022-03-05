@@ -15,3 +15,47 @@
  */
 
 package com.example.android.trackmysleepquality.database
+
+import android.content.Context
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+
+@Database(entities = [SleepNight::class],version=1,exportSchema=false)
+abstract class SleepDatabase: RoomDatabase(){
+
+    abstract val sleepDatabaseDao:SleepDatabaseDao
+
+    companion object{
+
+        //The volatile tag, prevents memory cache
+        @Volatile
+        private var INSTANCE: SleepDatabase? = null
+
+        /**
+         * @param {Context} context - The context is the application
+         * which can be found by calling returnNotNull(this.activity).application
+         */
+        fun getInstance(context: Context):SleepDatabase{
+            //the sychronized block is for when multiple
+            //threads request the database at the same
+            //time, only one thread of execution can enter
+            //this block of code at any time
+            synchronized(this){
+                var instance = INSTANCE
+
+                if(instance == null){
+                    instance = Room.databaseBuilder(
+                        context.applicationContext,
+                        SleepDatabase::class.java,
+                        "sleep_history_database"
+                    ).fallbackToDestructiveMigration().build()
+                    INSTANCE = instance
+                }
+                return instance
+            }
+        }
+    }
+
+
+}
