@@ -17,12 +17,11 @@
 package com.example.android.trackmysleepquality.sleeptracker
 
 import android.app.Application
+import androidx.lifecycle.*
 
-import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.MutableLiveData
 import com.example.android.trackmysleepquality.database.SleepDatabaseDao
 import com.example.android.trackmysleepquality.database.SleepNight
+import com.example.android.trackmysleepquality.formatNights
 import kotlinx.coroutines.*
 
 /**
@@ -38,7 +37,23 @@ class SleepTrackerViewModel(val database: SleepDatabaseDao, application: Applica
 
         private var tonight = MutableLiveData<SleepNight?>()
 
+        //nights will always have the latest data
+        //as it is a livedata object
         private val nights = database.getAllNights()
+
+        val nightsString = Transformations.map(nights){ nights ->
+                formatNights(nights,application.resources)
+        }
+
+        fun doneNavigating(){
+                _navigateToSleepQuality.value = null
+        }
+
+        private val _navigateToSleepQuality = MutableLiveData<SleepNight>()
+        val navigateToSleepQuality: LiveData<SleepNight>
+                get() = _navigateToSleepQuality
+
+
 
         init {
                 initializeTonight()
@@ -50,23 +65,21 @@ class SleepTrackerViewModel(val database: SleepDatabaseDao, application: Applica
         }
 
         private fun initializeTonight(){
-                uiScope.launch{
+                viewModelScope.launch{
                         tonight.value = getTonightFromDatabase()
                 }
         }
 
         private suspend fun getTonightFromDatabase():SleepNight?{
-                return withContext(Dispatchers.IO){
-                        var night = database.getTonight()
-                        if(night?.endTimeMilli != night?.startTimeMilli){
-                                night = null
-                        }
-                        night
+                var night = database.getTonight()
+                if(night?.endTimeMilli != night?.startTimeMilli){
+                        night = null
                 }
+                return night
         }
 
         fun onStartTracking(){
-                uiScope.launch {
+                viewModelScope.launch {
                         val newNight = SleepNight()
                         insert(newNight)
                         tonight.value = getTonightFromDatabase()
@@ -74,49 +87,34 @@ class SleepTrackerViewModel(val database: SleepDatabaseDao, application: Applica
         }
 
         fun onStopTracking(){
-                uiScope.launch{
+                viewModelScope.launch{
                         val oldNight = tonight.value ?: return@launch
-
                         oldNight.endTimeMilli =System.currentTimeMillis()
                         update(oldNight)
+                        _navigateToSleepQuality.value = oldNight
                 }
         }
 
         private suspend fun insert(night:SleepNight){
-                withContext(Dispatchers.IO) {
-                        database.insert(night)
-                }
+                database.insert(night)
         }
 
-        fun someWorkNeedsToBeDone {
-                uiScope.launch{
-                        suspendFunction()
-                }
-        }
-
-        suspend fun suspendFunction(){
-                withContext(Dispatchers.IO){
-                       longRunningWork()
-                }
-        }
-
+//
         private suspend fun update(night:SleepNight){
-                withContext(Dispatchers.IO){
-                        database.update(night)
-                }
+                database.update(night)
+
         }
 
         fun onClear(){
-                uiScope.launch{
-                        clear(),
+                viewModelScope.launch{
+                        clear()
                         tonight.value = null
                 }
         }
 
         private suspend fun clear(){
-                withContext(Dispatchers.IO){
-                        database.clear()
-                }
+                database.clear()
+
         }
 
 
