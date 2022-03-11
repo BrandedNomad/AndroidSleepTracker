@@ -32,17 +32,11 @@ import kotlinx.coroutines.*
 class SleepTrackerViewModel(val database: SleepDatabaseDao, application: Application) :
     AndroidViewModel(application) {
 
-    private var viewModelJob = Job()
-
-    //Uses Dispatchers.Main, which means that Coroutines run
-    //on the uiScope will run in the main thread
-    private val uiScope = CoroutineScope(Dispatchers.Main + viewModelJob)
-
     private var tonight = MutableLiveData<SleepNight?>()
 
     //nights will always have the latest data
     //as it is a livedata object
-    private val nights = database.getAllNights()
+    val nights = database.getAllNights()
 
     val nightsString = Transformations.map(nights) { nights ->
         formatNights(nights, application.resources)
@@ -75,7 +69,7 @@ class SleepTrackerViewModel(val database: SleepDatabaseDao, application: Applica
 
     override fun onCleared() {
         super.onCleared()
-        viewModelJob.cancel()
+
     }
 
     private fun initializeTonight() {
@@ -107,6 +101,7 @@ class SleepTrackerViewModel(val database: SleepDatabaseDao, application: Applica
             update(oldNight)
             _navigateToSleepQuality.value = oldNight
         }
+
     }
 
     private suspend fun insert(night: SleepNight) {
