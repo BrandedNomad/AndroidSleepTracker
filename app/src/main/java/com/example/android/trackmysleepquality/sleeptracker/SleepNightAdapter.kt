@@ -6,12 +6,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.android.trackmysleepquality.R
 import com.example.android.trackmysleepquality.database.SleepNight
 
-class SleepNightAdapter: RecyclerView.Adapter<SleepNightAdapter.ItemViewHolder>() {
+class SleepNightAdapter: ListAdapter<SleepNight, SleepNightAdapter.ItemViewHolder>(SleepNightDiffCallback()) {
 
     //Create a viewHolder
     class ItemViewHolder private constructor(itemView: View): RecyclerView.ViewHolder(itemView){
@@ -58,21 +61,12 @@ class SleepNightAdapter: RecyclerView.Adapter<SleepNightAdapter.ItemViewHolder>(
         }
     }
 
-    //Create data object
-    var data = listOf<SleepNight>()
-        set(value){ //Create a custom setter
-            field = value
-            notifyDataSetChanged() //tells recycler view that data has changed and causes a redraw
-        }
 
-    //Returns the size of the list
-    //tells the recyclerview how many items there are in the list
-    override fun getItemCount() = data.size
 
     //Called by RecyclerView to display the data at the specified position.
     //This is where data is binded to the viewHolder
     override fun onBindViewHolder(holder:ItemViewHolder, position:Int){
-        var item =  data[position]
+        var item =  getItem(position)
         var res = holder.itemView.context.resources
 
         //
@@ -83,6 +77,18 @@ class SleepNightAdapter: RecyclerView.Adapter<SleepNightAdapter.ItemViewHolder>(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
         return ItemViewHolder.from(parent)
 
+    }
+
+
+}
+
+class SleepNightDiffCallback: DiffUtil.ItemCallback<SleepNight>(){
+    override fun areItemsTheSame(oldItem: SleepNight, newItem: SleepNight): Boolean {
+        return oldItem.nightId == newItem.nightId
+    }
+
+    override fun areContentsTheSame(oldItem: SleepNight, newItem: SleepNight): Boolean {
+        return oldItem == newItem
     }
 
 
