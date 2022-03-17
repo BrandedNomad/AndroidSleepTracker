@@ -1,6 +1,5 @@
 package com.example.android.trackmysleepquality.sleeptracker
 
-import android.content.res.Resources
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -9,11 +8,10 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.android.trackmysleepquality.R
 import com.example.android.trackmysleepquality.database.SleepNight
 import com.example.android.trackmysleepquality.databinding.ListItemSleepNightBinding
 
-class SleepNightAdapter: ListAdapter<SleepNight, SleepNightAdapter.ItemViewHolder>(SleepNightDiffCallback()) {
+class SleepNightAdapter(val clickListener:SleepNightListener): ListAdapter<SleepNight, SleepNightAdapter.ItemViewHolder>(SleepNightDiffCallback()) {
 
     //Create a viewHolder
     class ItemViewHolder private constructor(val binding: ListItemSleepNightBinding): RecyclerView.ViewHolder(binding.root){
@@ -22,10 +20,12 @@ class SleepNightAdapter: ListAdapter<SleepNight, SleepNightAdapter.ItemViewHolde
         val qualityImage: ImageView = binding.qualityImage
 
         fun bind(
-        item: SleepNight
+            item: SleepNight,
+            clickListener: SleepNightListener
         ) {
             //bind to fragment data variable
             binding.sleep = item
+            binding.clickListener = clickListener
             binding.executePendingBindings()
 
         }
@@ -48,7 +48,7 @@ class SleepNightAdapter: ListAdapter<SleepNight, SleepNightAdapter.ItemViewHolde
         var res = holder.itemView.context.resources
 
         //
-        holder.bind(item)
+        holder.bind(item, clickListener)
 
     }
 
@@ -69,6 +69,11 @@ class SleepNightDiffCallback: DiffUtil.ItemCallback<SleepNight>(){
         return oldItem == newItem
     }
 
+
+}
+
+class SleepNightListener(val clickListener:(sleepId:Long) -> Unit){
+    fun onClick(night:SleepNight) = clickListener(night.nightId)
 
 }
 
