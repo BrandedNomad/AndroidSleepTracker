@@ -77,9 +77,7 @@ class SleepTrackerFragment : Fragment() {
         //So that binding can observe liveData updates
         binding.lifecycleOwner = this
 
-        //Create gridLayoutManager
-        val manager = GridLayoutManager(activity,3)
-        binding.sleepList.layoutManager = manager
+
 
         //seting adapter
         val adapter = SleepNightAdapter(SleepNightListener{
