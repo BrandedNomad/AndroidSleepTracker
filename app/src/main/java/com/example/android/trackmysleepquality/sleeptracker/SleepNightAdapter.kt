@@ -1,9 +1,7 @@
 package com.example.android.trackmysleepquality.sleeptracker
 
 import android.content.res.Resources
-import android.graphics.Color
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 
@@ -13,50 +11,30 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.android.trackmysleepquality.R
 import com.example.android.trackmysleepquality.database.SleepNight
+import com.example.android.trackmysleepquality.databinding.ListItemSleepNightBinding
 
 class SleepNightAdapter: ListAdapter<SleepNight, SleepNightAdapter.ItemViewHolder>(SleepNightDiffCallback()) {
 
     //Create a viewHolder
-    class ItemViewHolder private constructor(itemView: View): RecyclerView.ViewHolder(itemView){
-        val sleepQuality: TextView = itemView.findViewById(R.id.sleep_length)
-        val quality: TextView = itemView.findViewById(R.id.quality_string)
-        val qualityImage: ImageView = itemView.findViewById(R.id.quality_image)
+    class ItemViewHolder private constructor(val binding: ListItemSleepNightBinding): RecyclerView.ViewHolder(binding.root){
+        val sleepQuality: TextView = binding.sleepLength
+        val quality: TextView = binding.qualityString
+        val qualityImage: ImageView = binding.qualityImage
 
         fun bind(
-        holder: ItemViewHolder,
-        item: SleepNight,
-        res: Resources
+        item: SleepNight
         ) {
-            holder.sleepQuality.text = item.sleepQuality.toString()
-            holder.quality.setText(
-                when (item.sleepQuality) {
-                    0 -> "Very Bad"
-                    1 -> "Bad"
-                    2 -> "Poor"
-                    3 -> "OK"
-                    4 -> "Good"
-                    5 -> "Excellent"
-                    else -> "Can't Say"
-                }
-            )
-            holder.qualityImage.setImageResource(
-                when (item.sleepQuality) {
-                    0 -> R.drawable.ic_sleep_0
-                    1 -> R.drawable.ic_sleep_1
-                    2 -> R.drawable.ic_sleep_2
-                    3 -> R.drawable.ic_sleep_3
-                    4 -> R.drawable.ic_sleep_4
-                    5 -> R.drawable.ic_sleep_5
-                    else -> R.drawable.ic_sleep_active
-                }
-            )
+            //bind to fragment data variable
+            binding.sleep = item
+            binding.executePendingBindings()
+
         }
 
         companion object {
             fun from(parent:ViewGroup): ItemViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
-                val view = layoutInflater.inflate(R.layout.list_item_sleep_night, parent, false) as View
-                return ItemViewHolder(view)
+                val binding = ListItemSleepNightBinding.inflate(layoutInflater, parent, false)
+                return ItemViewHolder(binding)
             }
         }
     }
@@ -70,7 +48,7 @@ class SleepNightAdapter: ListAdapter<SleepNight, SleepNightAdapter.ItemViewHolde
         var res = holder.itemView.context.resources
 
         //
-        holder.bind(holder, item,res)
+        holder.bind(item)
 
     }
 
